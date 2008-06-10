@@ -1,6 +1,5 @@
-
 # Copyright (c) 2007-2008 Yann Ramin
-
+#
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
 # files (the "Software"), to deal in the Software without
@@ -12,7 +11,7 @@
 #
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 # OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,30 +25,14 @@
 
 import copy
 
+__all__ = ('Form')
 
 
-from yyafl import validate
 from yyafl.fields import *
 
 # Exceptions
-
-class ValidationError(Exception):
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
-
-
-
-
-
-class SortedDictFromList(SortedDict):
-    def __init__(self, data=None):
-        if data is None: data = []
-        self.keyOrder = [d[0] for d in data]
-        dict.__init__(self, dict(data))
-
-    def copy(self):
-        return SortedDictFromList([(k, copy.copy(v)) for k, v in self.items()])
-
+from yyafl.exception import *
+from yyafl.util import *
 
 class FieldsMetaclass(type):
     # Inspired heavily by Django
@@ -66,12 +49,20 @@ class FieldsMetaclass(type):
 
 
 
-class BaseForm:
+class BaseForm(object):
     def __init__(self, data = None, id = None):
         self.is_bound = data is not None
         self.data = data or {}
+        self.clean_data = {}
         self.id = id
         self.errors = {}
+
+        self.fields = self.base_fields.copy()
+
+
+    def __iter__(self):
+        for name, field in self.fields.items():
+            yield BoundField(self, field, name)
 
     def __getitem__(self, name):
         try:
@@ -80,15 +71,47 @@ class BaseForm:
             raise KeyError(name)
         return BoundField(self, field, name)
 
-class BoundField:
+
+
+    def get_html_field_name(self, field):
+        if id is not None:
+            return id + '_' + field
+        else:
+            return field
+
+    def validate(self):
+        if self.data == {}:
+            return False
+
+        for name, field in self.fields.items():
+            value = self.data[self.get_html_field_name(name)]
+            try:
+                value = field.clean(value)
+                self.clean_data[name] = value
+            except ValidationError, e:
+                errors[name] = e.messages
+
+
+class BoundField(object):
     def __init__(self, form, field, name):
         self.form = form
         self.field = field
         self.name = name
 
+    def __unicode__(self):
+        return self.value().__unicode__()
+
+    @property
+    def value(self):
+        if name in self.form.clean_data:
+            return self.form.clean_data[name]
+        else:
+            return self.field.clean(self.form.data[self.form.get_html_field_name[name]])
+
+    @property
+    def raw(self):
+        return self.form.data[name]
+
 
 class Form(BaseForm):
     __metaclass__ = FieldsMetaclass
-
-
-

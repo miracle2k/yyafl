@@ -1,6 +1,6 @@
+from yyafl.exception import ValidationError
 
-from yyafl import ValidationError
-
+import re
 import gettext
 _trans = gettext.translation('yyafl', fallback = True)
 _ = _trans.ugettext
@@ -26,7 +26,7 @@ class Field:
 
     def clean(self, value):
         if self.required and value in EMPTY_VALUES:
-            raise ValidationError(_(u'Value is required.')))
+            raise ValidationError(_(u'Value is required.'))
         return value
 
 
@@ -55,7 +55,7 @@ class CharField(Field):
 # Inspired by Django
 
 class RegexField(Field):
-    def __init__(self, regex, max_length=None, min_length=None, error_message=None, *args, **kwargs):
+    def __init__(self, regex, max_length = None, min_length = None, error_message = None, *args, **kwargs):
         super(RegexField, self).__init__(*args, **kwargs)
         if isinstance(regex, basestring):
             regex = re.compile(regex)
@@ -106,7 +106,3 @@ def IntegerField(Field):
         if self.min_value is not None and value < self.min_value:
             raise ValidationError(_(u'Value must be greater than %d') % self.min_value)
         return value
-
-
-
-
