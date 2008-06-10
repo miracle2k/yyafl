@@ -58,7 +58,7 @@ class BaseForm(object):
         self.errors = {}
 
         self.fields = self.base_fields.copy()
-
+        print self.fields
 
     def __iter__(self):
         for name, field in self.fields.items():
@@ -109,10 +109,10 @@ class BoundField(object):
 
     @property
     def value(self):
-        if name in self.form.clean_data:
-            return self.form.clean_data[name]
+        if self.name in self.form.clean_data:
+            return self.form.clean_data[self.name]
         else:
-            return self.field.clean(self.form.data[self.form.get_html_field_name[name]])
+            return self.field.clean(self.form.data[self.form.get_html_field_name(self.name) ])
 
     @property
     def raw(self):
