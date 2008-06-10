@@ -74,14 +74,15 @@ class BaseForm(object):
 
 
     def get_html_field_name(self, field):
-        if id is not None:
-            return id + '_' + field
+        if self.id is not None:
+            return self.id + '_' + field
         else:
             return field
 
     def validate(self):
         if self.data == {}:
             return False
+        self.errors = {}
 
         for name, field in self.fields.items():
             value = self.data[self.get_html_field_name(name)]
@@ -89,7 +90,12 @@ class BaseForm(object):
                 value = field.clean(value)
                 self.clean_data[name] = value
             except ValidationError, e:
-                errors[name] = e.messages
+                self.errors[name] = e.messages
+        if self.errors == {}:
+            return True
+        else:
+            return self.errors
+
 
 
 class BoundField(object):

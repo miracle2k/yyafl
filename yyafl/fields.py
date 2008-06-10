@@ -19,10 +19,18 @@ def smart_unicode(s):
     return s
 
 
-class Field:
+class Field(object):
+
+    creation_counter = 0
+
     def __init__(self, required = True, label = None, default = None):
         self.required = required
         self.default = default
+        self.label = label
+        # Up the creation counter
+        # Idea stolen from Django to sort fields
+        self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
 
     def clean(self, value):
         if self.required and value in EMPTY_VALUES:
@@ -90,11 +98,11 @@ class EmailField(RegexField):
 
 
 
-def IntegerField(Field):
+class IntegerField(Field):
     def __init__(self, min_value = None, max_value = None, *args, **kwargs):
         self.max_value, self.min_value = max_value, min_value
         super(IntegerField, self).__init__(*args, **kwargs)
-    def clean(value):
+    def clean(self, value):
         if value in EMPTY_VALUES:
             return None
         try:
