@@ -8,7 +8,9 @@ _ = _trans.ugettext
 EMPTY_VALUES = ["", u"", None, " "]
 
 def smart_unicode(s):
-    # Create a unicode string if its not a unicode string
+    # Create a unicode string if its not a unicode string, using utf-8 encoding
+    # Django had this with their settings module
+    # Needs to be extended for multiple encodings?
     if not isinstance(s, basestring):
         if hasattr(s, '__unicode__'):
             s = unicode(s)
@@ -102,15 +104,47 @@ class IntegerField(Field):
     def __init__(self, min_value = None, max_value = None, *args, **kwargs):
         self.max_value, self.min_value = max_value, min_value
         super(IntegerField, self).__init__(*args, **kwargs)
+
     def clean(self, value):
         if value in EMPTY_VALUES:
             return None
         try:
             value = int(value)
         except (ValueError, TypeError):
-            raise ValidationError(_(u'Enter an integer value (-1, 10, 3)'))
+            raise ValidationError(_(u'Enter an integer value (i.e.: -1, 10, 3000)'))
         if self.max_value is not None and value > self.max_value:
             raise ValidationError(_(u'Value must be less than %d') % self.max_value)
         if self.min_value is not None and value < self.min_value:
             raise ValidationError(_(u'Value must be greater than %d') % self.min_value)
         return value
+
+
+class FloatField(Field):
+    def __init__(self, min_value = None, max_value = None, *args, **kwargs):
+        self.max_value, self.min_value = max_value, min_value
+        super(IntegerField, self).__init__(*args, **kwargs)
+
+    def clean(self, value):
+        if value in EMPTY_VALUES:
+            return None
+        try:
+            value = float(value)
+        except (ValueError, TypeError):
+            raise ValidationError(_(u'Enter a number'))
+        if self.max_value is not None and value > self.max_value:
+            raise ValidationError(_(u'Value must be less than %d') % self.max_value)
+        if self.min_value is not None and value < self.min_value:
+            raise ValidationError(_(u'Value must be greater than %d') % self.min_value)
+        return value
+
+
+class OptionField(Field):
+    def __init__(self, values = [], *args, **kwargs):
+        self.allowed_values = values
+        super(OptionField, self).__init__(*args, **kwargs)
+
+    def clean(self, value):
+        if value in self.allowed_values:
+            return value
+        else:
+            raise ValidationError(_(u'Not an allowed value.'))

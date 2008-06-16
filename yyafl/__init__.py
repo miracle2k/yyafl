@@ -57,8 +57,29 @@ class BaseForm(object):
         self.id = id
         self.errors = {}
 
+        # Has validation been run on this data set
+        self.validated = False
+
         self.fields = self.base_fields.copy()
-        print self.fields
+        if data:
+            # Run validation now
+            self.validate()
+
+    def bind(self, data, validate = True):
+        """ Bind a form with data, optionally running validation.
+
+        If validate == True, will return True for successful validation, or a list of errors.
+        If validate == False, will return None.
+        """
+        self.data = data
+        self.is_bound = data is not None
+        self.errors = {}
+        self.validated = False
+        if validate:
+            return self.validate()
+        else:
+            return None
+
 
     def __iter__(self):
         for name, field in self.fields.items():
@@ -79,18 +100,31 @@ class BaseForm(object):
         else:
             return field
 
+    def is_valid(self):
+        if self.errors != {}:
+            return False
+        if self.data == {}:
+            return True
+        return True
+
     def validate(self):
         if self.data == {}:
             return False
         self.errors = {}
 
         for name, field in self.fields.items():
-            value = self.data[self.get_html_field_name(name)]
+
             try:
+                value = self.data[self.get_html_field_name(name)]
                 value = field.clean(value)
                 self.clean_data[name] = value
-            except ValidationError, e:
+            except (ValidationError), e:
                 self.errors[name] = e.messages
+            except (KeyError), e:
+                self.errors[name] = "Value not in request"
+
+        self.validated = True
+
         if self.errors == {}:
             return True
         else:
@@ -108,16 +142,24 @@ class BoundField(object):
         return self.value().__unicode__()
 
     @property
+    def error(self):
+        if self.form.validated == False:
+            return None
+        if self.name in self.form.errors:
+            return self.form.errors[self.name]
+        else:
+            return None
+
+    @property
     def value(self):
         if self.name in self.form.clean_data:
+            # If its cleaned, get it from the cache
             return self.form.clean_data[self.name]
         else:
             return self.field.clean(self.form.data[self.form.get_html_field_name(self.name) ])
 
-    @property
-    def raw(self):
-        return self.form.data[name]
 
 
 class Form(BaseForm):
+    """ The base form class. Derive from this class to create a form. """
     __metaclass__ = FieldsMetaclass

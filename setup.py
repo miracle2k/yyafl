@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "yyafl",
-    version = "0.2.1",
+    version = "0.2.0",
     packages = find_packages(),
     author = 'Yann Ramin',
     author_email = 'atrus@stackworks.net',

@@ -1,0 +1,9 @@
+
+A quick set of example programs using yyafl.
+
+All programs require:
+    - CherryPy 3.0.x (for builtin webserver)
+
+The templating examples require:
+    - Mako (+dependencies)
+
