@@ -59,3 +59,27 @@ class SortedDictFromList(SortedDict):
 
     def copy(self):
         return SortedDictFromList([(k, copy.copy(v)) for k, v in self.items()])
+
+# Converts a dictionary to a single string with key="value", XML-style with
+# a leading space. Assumes keys do not need to be XML-escaped.
+
+def escape(string):
+    string.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+    return string
+
+
+flatatt = lambda attrs: u''.join([u' %s="%s"' % (k, escape(v)) for k, v in attrs.items()])
+
+
+def smart_unicode(s):
+    # Create a unicode string if its not a unicode string, using utf-8 encoding
+    # Django had this with their settings module
+    # Needs to be extended for multiple encodings?
+    if not isinstance(s, basestring):
+        if hasattr(s, '__unicode__'):
+            s = unicode(s)
+        else:
+            s = unicode(str(s), 'utf-8')
+    elif not isinstance(s, unicode):
+        s = unicode(s, 'utf-8')
+    return s

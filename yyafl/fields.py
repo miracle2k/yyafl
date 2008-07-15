@@ -5,30 +5,23 @@ import gettext
 _trans = gettext.translation('yyafl', fallback = True)
 _ = _trans.ugettext
 
-EMPTY_VALUES = ["", u"", None, " "]
+from widgets import TextInput
+from yyafl.util import smart_unicode
 
-def smart_unicode(s):
-    # Create a unicode string if its not a unicode string, using utf-8 encoding
-    # Django had this with their settings module
-    # Needs to be extended for multiple encodings?
-    if not isinstance(s, basestring):
-        if hasattr(s, '__unicode__'):
-            s = unicode(s)
-        else:
-            s = unicode(str(s), 'utf-8')
-    elif not isinstance(s, unicode):
-        s = unicode(s, 'utf-8')
-    return s
+EMPTY_VALUES = ["", u"", None, " "]
 
 
 class Field(object):
 
     creation_counter = 0
 
-    def __init__(self, required = True, label = None, default = None):
+    def __init__(self, required = True, label = None, id = None, default = None, widget = None):
         self.required = required
         self.default = default
         self.label = label
+        self.id = id
+        self.widget = widget or TextInput
+        self.widget = self.widget()
         # Up the creation counter
         # Idea stolen from Django to sort fields
         self.creation_counter = Field.creation_counter
