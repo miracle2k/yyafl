@@ -1,6 +1,7 @@
 from yyafl.util import flatatt, smart_unicode
 
 
+
 class Widget(object):
     is_hidden = False
     def __init__(self, attrs = None):
@@ -34,6 +35,13 @@ class Input(Widget):
 class TextInput(Input):
     input_type = "text"
     pass
+
+class TextArea(Widget):
+    def render(self, name, value, attrs = None):
+        if value is None: value = '' # default value
+        final_attrs = self.build_attrs(attrs, name=name)
+
+        return u'<textarea' + flatatt(final_attrs) + u'>' + smart_unicode(value) + u'</textarea>' 
 
 class HiddenInput(Input):
     input_type = "hidden"
