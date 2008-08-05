@@ -116,10 +116,14 @@ class BoundField(object):
     def __unicode__(self):
         return self.as_widget()
 
-    def as_widget(self, widget = None, attrs = None):
+    def as_widget(self, widget = None, **kwargs):
         if not widget:
             widget = self.field.widget
-        attrs = attrs or {}
+        attrs = kwargs or {}
+
+        for attr in attrs:
+            attrs[attr] = unicode(attrs[attr])
+
         if self.field.id:
             attrs['id'] = self.field.id
         if not self.form.is_bound:
