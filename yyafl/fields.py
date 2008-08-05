@@ -5,7 +5,7 @@ import gettext
 _trans = gettext.translation('yyafl', fallback = True)
 _ = _trans.ugettext
 
-from widgets import TextInput
+from widgets import TextInput, Select
 from yyafl.util import smart_unicode
 
 EMPTY_VALUES = ["", u"", None, " "]
@@ -131,10 +131,12 @@ class FloatField(Field):
         return value
 
 
-class OptionField(Field):
-    def __init__(self, values = [], *args, **kwargs):
-        self.allowed_values = values
-        super(OptionField, self).__init__(*args, **kwargs)
+class ChoiceField(Field):
+    def __init__(self, allowed_values = [], widget = None, *args, **kwargs):
+        self.allowed_values = allowed_values
+        super(ChoiceField, self).__init__(*args, **kwargs)
+        self.widget = widget or Select
+        self.widget = self.widget()
 
     def clean(self, value):
         if value in self.allowed_values:

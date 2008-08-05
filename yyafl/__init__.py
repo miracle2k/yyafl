@@ -122,7 +122,7 @@ class BoundField(object):
         attrs = kwargs or {}
 
         for attr in attrs:
-            attrs[attr] = unicode(attrs[attr])
+            attrs[attr] = smart_unicode(attrs[attr])
 
         if self.field.id:
             attrs['id'] = self.field.id
@@ -130,6 +130,9 @@ class BoundField(object):
             data = self.field.default
         else:
             data = self.rawvalue
+
+        widget.set_field(self.field) # Set the Field instance
+
         return widget.render(self.form.get_html_field_name(self.name), data, attrs)
 
 
