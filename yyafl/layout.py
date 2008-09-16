@@ -28,8 +28,10 @@
 
 
 class Layout(object):
-    def __init__(self, form):
+    def __init__(self, form, decorators = None):
         self.form = form
+        self.decorators = decorators
+
     def layout(self):
         raise Exception("Not implemented in BaseLayout")
 
@@ -61,7 +63,12 @@ class NullDecorator(Decorator):
         return widget
 
 
+class NullLayout(Layout):
+    def __init__(self, form, *args, **kwargs):
+        super(NullLayout, self).__init__(form, *args, **kwargs)
+
+
 class TableLayout(Layout):
-    def __init__(self, form, decorators = None, *args, **kwargs):
-        super(TableLayout, self).__init__(form)
+    def __init__(self, form,  *args, **kwargs):
+        super(TableLayout, self).__init__(form, *args, **kwargs)
         self._decorators = decorators
