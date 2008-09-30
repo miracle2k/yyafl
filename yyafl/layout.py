@@ -27,11 +27,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+from yyafl.util import *
+
 class Layout(object):
     def __init__(self, form, decorators = None):
         self.form = form
         self.decorators = decorators
-        if self.decoractors is None:
+        if self.decorators is None:
             self.decorators = {}
 
     def decorator_for_field(self, fieldname):
@@ -41,7 +43,7 @@ class Layout(object):
         except:
             return NullDecorator()
 
-    def layout(self):
+    def render(self):
         raise Exception("Not implemented in BaseLayout")
 
 
@@ -63,10 +65,10 @@ class Decorator(object):
 
 class NullDecorator(Decorator):
     def widget_attributes(self, field):
-        return []
+        return {}
 
     def layout_attributes(self, field):
-        return []
+        return {}
 
     def extra_markup(self, field, rendered_text):
         return rendered_text
@@ -75,11 +77,11 @@ class NullDecorator(Decorator):
 class NullLayout(Layout):
     def __init__(self, form, *args, **kwargs):
         super(NullLayout, self).__init__(form, *args, **kwargs)
-    def layout(self):
+    def render(self):
         data = []
-        for field in self.form.fields:
+        for fieldname in self.form.fields:
             # Fetch the bound field
-            field = self.form[field.name]
+            field = self.form[fieldname]
 
             dec = self.decorator_for_field(field.name)
             widget_attr = {}
@@ -93,15 +95,16 @@ class NullLayout(Layout):
 class TableLayout(Layout):
     def __init__(self, form,  *args, **kwargs):
         super(TableLayout, self).__init__(form, *args, **kwargs)
-    def layout(self):
+    def render(self):
         data = []
         data.append(u'<table>')
-        for field in self.form.fields:
+        for fieldname in self.form.fields:
             # Fetch the bound field
-            field = self.form[field.name]
+            field = self.form[fieldname]
+
 
             data.append(u'<tr%s><td>' % flatatt(self.decorator_for_field(field.name).layout_attributes(field)))
-            data.append(field.field.label)
+            data.append(field.field.label or fieldname)
             data.append(u'</td><td>')
             dec = self.decorator_for_field(field.name)
 
@@ -112,4 +115,5 @@ class TableLayout(Layout):
             data.append( dec.extra_markup(field, rendered_widget) )
             data.append(u'</td></tr>')
 
+        data.append('</table>')
         return u''.join(data)

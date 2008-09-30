@@ -55,7 +55,11 @@ class FieldsMetaclass(type):
 
 class BaseForm(object):
     def __init__(self, data = None, id = None):
-        self.is_bound = data is not None
+        if data == {} or data is None:
+            self.is_bound = False
+        else:
+            self.is_bound = True
+
         self.data = data or {}
         self.clean_data = {}
         self.id = id
@@ -76,7 +80,12 @@ class BaseForm(object):
         If validate == False, will return None.
         """
         self.data = data
-        self.is_bound = data is not None
+        if data == {} or data is None:
+            self.is_bound = False
+        else:
+            self.is_bound = True
+
+
         self.errors = {}
         self.validated = False
         if validate:
