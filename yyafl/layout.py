@@ -118,31 +118,64 @@ class NullLayout(Layout):
         return u''.join(data)
 
 
-class TableLayout(Layout):
-    def __init__(self,  *args, **kwargs):
-        super(TableLayout, self).__init__(*args, **kwargs)
+class SimpleLayout(Layout):
+    """ A SimpleLayout provides basic tags to be worked around a form. Don't use this directly - use a
+    TableLayout or DivLayout """
+
+    def __init__(self, *args, **kwargs):
+        super(SimpleLayout, self).__init__(*args, **kwargs)
+        try:
+            self.attributes = kwargs['attributes']
+        except:
+            self.attributes = {}
+
     def render(self, form):
         data = []
-        data.append(u'<table>')
+        data.append(self.begin_tag % flatatt(self.attributes) )
         for fieldname in form.fields:
             # Fetch the bound field
             field = form[fieldname]
 
             dec = self.decorator_for_field(field.name)
 
-            data.append(u'<tr%s><td%s>' % (flatatt(dec.layout_attributes(field)),
-                        flatatt(dec.layout_label_attributes(field))))
+            data.append(self.row_begin_tag % flatatt(dec.layout_attributes(field)))
+            data.append(self.cell_begin_tag %flatatt(dec.layout_label_attributes(field)))
 
             data.append(dec.extra_markup_label(field, field.field.label or fieldname))
 
-            data.append(u'</td><td%s>' % flatatt(dec.layout_widget_attributes(field)))
+            data.append(self.cell_end_tag)
+            data.append(self.cell_begin_tag % flatatt(dec.layout_widget_attributes(field)))
 
             widget_attr = dec.widget_attributes(field)
 
             rendered_widget = field.as_widget(  **widget_attr )
 
             data.append( dec.extra_markup_widget(field, rendered_widget) )
-            data.append(u'</td></tr>')
+            data.append(self.cell_end_tag + self.row_end_tag)
 
-        data.append('</table>')
+        data.append(self.end_tag)
         return u''.join(data)
+
+class TableLayout(SimpleLayout):
+    def __init__(self,  *args, **kwargs):
+        super(TableLayout, self).__init__(*args, **kwargs)
+        self.begin_tag = u'<table%s>'
+        self.end_tag = u'</table>'
+
+        self.row_begin_tag = u'<tr%s>'
+        self.row_end_tag = u'</tr>'
+
+        self.cell_begin_tag = u'<td%s>'
+        self.cell_end_tag = u'</td>'
+
+class DivLayout(SimpleLayout):
+    def __init__(self,  *args, **kwargs):
+        super(TableLayout, self).__init__(*args, **kwargs)
+        self.begin_tag = u'<div%s>'
+        self.end_tag = u'</div>'
+
+        self.row_begin_tag = u'<div%s>'
+        self.row_end_tag = u'</div>'
+
+        self.cell_begin_tag = u'<div%s>'
+        self.cell_end_tag = u'</div>'
