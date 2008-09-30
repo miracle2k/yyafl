@@ -30,7 +30,7 @@ class FormTest(object):
 
         # Render using the layout specified in _layout above.
         content += f.render()
-        # Or invoke the layout explitly
+        # Or invoke the layout explicitly
         # l = yyafl.layout.TableLayout()
         # l.render(f)
 
