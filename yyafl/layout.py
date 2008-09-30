@@ -30,17 +30,21 @@
 from yyafl.util import *
 
 class Layout(object):
-    def __init__(self, decorators = None):
+    def __init__(self, decorators = None, groups = None):
         self.decorators = decorators
+        self.groups = groups
+
         if self.decorators is None:
             self.decorators = {}
 
     def decorator_for_field(self, fieldname):
-        # TODO: Extend this for wildcards
-        try:
-            return decorators[fieldname]
-        except:
-            return NullDecorator()
+        if fieldname in self.decorators:
+            return self.decorators[fieldname]
+
+        if '*' in self.decorators:
+            return self.decorators[fieldname]
+
+        return NullDecorator()
 
     def render(self):
         raise Exception("Not implemented in BaseLayout")
@@ -55,12 +59,25 @@ class Decorator(object):
         raise Exception("Not implemented")
 
     def layout_attributes(self, bound_field):
-        """ Returns a list of attributes to add to the layout clause for this form field. May not be supported by all layouts. """
+        """ Returns a list of attributes to add to the layout clause for all fo the form field. May not be supported by all layouts. """
         raise Exception("Not implemented")
 
-    def extra_markup(self, field, rendered_text):
+    def layout_widget_attributes(self, bound_field):
+        """ Returns a list of attributes to add to the layout clase for the label for this form field. """
+        raise Exception("Not implemented")
+
+    def layout_label_attributes(self, bound_field):
+        """ Returns a list of attributes to add to the layout clase for the label for this form field. """
+        raise Exception("Not implemented")
+
+    def extra_markup_widget(self, field, rendered_text):
         """ Adds extra markup around a widget. Expects the widget to have already rendered.  """
         raise Exception("Not implemented")
+
+    def extra_markup_label(self, field, rendered_text):
+        """ Adds extra markup around a widget. Expects the widget to have already rendered.  """
+        raise Exception("Not implemented")
+
 
 class NullDecorator(Decorator):
     def widget_attributes(self, field):
@@ -69,7 +86,16 @@ class NullDecorator(Decorator):
     def layout_attributes(self, field):
         return {}
 
-    def extra_markup(self, field, rendered_text):
+    def layout_widget_attributes(self, bound_field):
+        return {}
+
+    def layout_label_attributes(self, bound_field):
+        return {}
+
+    def extra_markup_widget(self, field, rendered_text):
+        return rendered_text
+
+    def extra_markup_label(self, field, rendered_text):
         return rendered_text
 
 
@@ -82,13 +108,13 @@ class NullLayout(Layout):
         for fieldname in form.fields:
             # Fetch the bound field
             field = form[fieldname]
+            field = form[fieldname]
 
             dec = self.decorator_for_field(field.name)
-            widget_attr = {}
-            if dec:
-                widget_attr = dec.widget_attributes(field)
-            data.append(field.as_widget(  **widget_attr ))
-
+            data.append(dec.extra_markup_label(field, field.field.label or fieldname))
+            widget_attr = dec.widget_attributes(field)
+            rendered_widget = field.as_widget(  **widget_attr )
+            data.append( dec.extra_markup_widget(field, rendered_widget) )
         return u''.join(data)
 
 
@@ -102,17 +128,20 @@ class TableLayout(Layout):
             # Fetch the bound field
             field = form[fieldname]
 
-
-            data.append(u'<tr%s><td>' % flatatt(self.decorator_for_field(field.name).layout_attributes(field)))
-            data.append(field.field.label or fieldname)
-            data.append(u'</td><td>')
             dec = self.decorator_for_field(field.name)
+
+            data.append(u'<tr%s><td%s>' % (flatatt(dec.layout_attributes(field)),
+                        flatatt(dec.layout_label_attributes(field))))
+
+            data.append(dec.extra_markup_label(field, field.field.label or fieldname))
+
+            data.append(u'</td><td%s>' % flatatt(dec.layout_widget_attributes(field)))
 
             widget_attr = dec.widget_attributes(field)
 
             rendered_widget = field.as_widget(  **widget_attr )
 
-            data.append( dec.extra_markup(field, rendered_widget) )
+            data.append( dec.extra_markup_widget(field, rendered_widget) )
             data.append(u'</td></tr>')
 
         data.append('</table>')
