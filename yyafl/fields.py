@@ -52,7 +52,7 @@ class Field(object):
         self.widget = widget or TextInput
         self.widget = self.widget()
         # Up the creation counter
-        # Idea stolen from Django to sort fields
+        # Idea borrowed from Django to sort fields
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
 
