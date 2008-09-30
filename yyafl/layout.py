@@ -129,29 +129,39 @@ class SimpleLayout(Layout):
         except:
             self.attributes = {}
 
+    def render_row(self, form, field):
+        data = []
+        fieldname = field.name
+        dec = self.decorator_for_field(fieldname)
+
+        data.append(self.row_begin_tag % flatatt(dec.layout_attributes(field)))
+        data.append(self.cell_begin_tag %flatatt(dec.layout_label_attributes(field)))
+
+        data.append(dec.extra_markup_label(field, field.field.label or fieldname))
+
+        data.append(self.cell_end_tag)
+        data.append(self.cell_begin_tag % flatatt(dec.layout_widget_attributes(field)))
+
+        widget_attr = dec.widget_attributes(field)
+
+        rendered_widget = field.as_widget(  **widget_attr )
+
+        data.append( dec.extra_markup_widget(field, rendered_widget) )
+        data.append(self.cell_end_tag + self.row_end_tag)
+
+        return data
+
     def render(self, form):
         data = []
         data.append(self.begin_tag % flatatt(self.attributes) )
         for fieldname in form.fields:
             # Fetch the bound field
             field = form[fieldname]
-
-            dec = self.decorator_for_field(field.name)
-
-            data.append(self.row_begin_tag % flatatt(dec.layout_attributes(field)))
-            data.append(self.cell_begin_tag %flatatt(dec.layout_label_attributes(field)))
-
-            data.append(dec.extra_markup_label(field, field.field.label or fieldname))
-
-            data.append(self.cell_end_tag)
-            data.append(self.cell_begin_tag % flatatt(dec.layout_widget_attributes(field)))
-
-            widget_attr = dec.widget_attributes(field)
-
-            rendered_widget = field.as_widget(  **widget_attr )
-
-            data.append( dec.extra_markup_widget(field, rendered_widget) )
-            data.append(self.cell_end_tag + self.row_end_tag)
+            if field.field.widget.is_hidden:
+                # Hidden fields don't need decoration of any details
+                data.append(field.as_widget())
+                continue
+            data.extend( self.render_row(form, field) )
 
         data.append(self.end_tag)
         return u''.join(data)

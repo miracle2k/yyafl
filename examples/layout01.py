@@ -2,10 +2,12 @@ import cherrypy
 import yyafl
 import yyafl.layout
 from yyafl import fields
+from yyafl.widgets import HiddenInput
 
 class Form1(yyafl.Form):
     name = fields.CharField(label = "User name", required = True)
     email = fields.CharField(label = "Your e-mail address", required = True)
+    hidden = fields.CharField(widget = HiddenInput, default = "123")
     _layout = yyafl.layout.TableLayout()
 
 class FormTest(object):
