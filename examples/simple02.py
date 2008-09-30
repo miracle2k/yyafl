@@ -8,14 +8,13 @@ class Form1(yyafl.Form):
 
 
 class FormTest(object):
+
     @cherrypy.expose
     def index(self, **kwargs):
         f = Form1(data = kwargs)
         content = ""
-        content += """
-<html>
-<body>
-"""
+        content += """<html><body>"""
+
         if f.is_valid() == False:
             content += "Errors: "
             for error in f.errors:
@@ -24,26 +23,19 @@ class FormTest(object):
             content += "Thanks for the data!"
 
 
-        content += """
-<p>
-<form method="GET" action="/">
-Please enter your name and e-mail:<br/>
-Name: """ + f['name'].as_widget()
+        content += """<p><form method="GET" action="/">Please enter your name and e-mail:<br/>Name: """
+        content += f['name'].as_widget()
 
         if f['name'].error:
             content += f['name'].error
-        content += """
-<br />
-E-mail: """ + f['email'].as_widget(attrs = {'size' : '100'})
+        content += """<br />E-mail: """
+        content += f['email'].as_widget(attrs = {'size' : '100'})
+
         if f['email'].error:
             content += f['email'].error
-        content += """
-<br />
-<input type="submit" />
-</body>
-</html>
-"""
+        content += """<br /><input type="submit" /></body></html>"""
+
         return content
 
-
-cherrypy.quickstart(root = FormTest())
+if __name__ == '__main__':
+    cherrypy.quickstart(root = FormTest())

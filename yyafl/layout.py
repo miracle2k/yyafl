@@ -30,8 +30,7 @@
 from yyafl.util import *
 
 class Layout(object):
-    def __init__(self, form, decorators = None):
-        self.form = form
+    def __init__(self, decorators = None):
         self.decorators = decorators
         if self.decorators is None:
             self.decorators = {}
@@ -75,13 +74,14 @@ class NullDecorator(Decorator):
 
 
 class NullLayout(Layout):
-    def __init__(self, form, *args, **kwargs):
-        super(NullLayout, self).__init__(form, *args, **kwargs)
-    def render(self):
+    def __init__(self,  *args, **kwargs):
+        super(NullLayout, self).__init__(*args, **kwargs)
+
+    def render(self, form):
         data = []
-        for fieldname in self.form.fields:
+        for fieldname in form.fields:
             # Fetch the bound field
-            field = self.form[fieldname]
+            field = form[fieldname]
 
             dec = self.decorator_for_field(field.name)
             widget_attr = {}
@@ -93,14 +93,14 @@ class NullLayout(Layout):
 
 
 class TableLayout(Layout):
-    def __init__(self, form,  *args, **kwargs):
-        super(TableLayout, self).__init__(form, *args, **kwargs)
-    def render(self):
+    def __init__(self,  *args, **kwargs):
+        super(TableLayout, self).__init__(*args, **kwargs)
+    def render(self, form):
         data = []
         data.append(u'<table>')
-        for fieldname in self.form.fields:
+        for fieldname in form.fields:
             # Fetch the bound field
-            field = self.form[fieldname]
+            field = form[fieldname]
 
 
             data.append(u'<tr%s><td>' % flatatt(self.decorator_for_field(field.name).layout_attributes(field)))

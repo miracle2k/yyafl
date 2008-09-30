@@ -33,10 +33,12 @@ __all__ = ('Form')
 
 
 from yyafl.fields import *
+import yyafl.layout
 
 # Exceptions
 from yyafl.exception import *
 from yyafl.util import *
+
 
 class FieldsMetaclass(type):
     # Inspired heavily by Django
@@ -49,6 +51,10 @@ class FieldsMetaclass(type):
                 fields = base.base_fields.items() + fields
 
         attrs['base_fields'] = SortedDictFromList(fields)
+
+        if not hasattr(base, '_layout'):
+            attrs['_layout'] = yyafl.layout.NullLayout()
+
         return type.__new__(cls, name, bases, attrs)
 
 
@@ -72,6 +78,9 @@ class BaseForm(object):
         if data:
             # Run validation now
             self.validate()
+
+    def render(self):
+        return self._layout.render(self)
 
     def bind(self, data, validate = True):
         """ Bind a form with data, optionally running validation.
