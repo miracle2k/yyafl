@@ -1,10 +1,10 @@
-from setuptools import setup, find_packages
+from distutils.core import setup
 setup(
     name = "yyafl",
     version = "0.2.0",
-    packages = find_packages(),
+    packages = ['yyafl'],
     author = 'Yann Ramin',
-    url = 'http://www.stackfoundry.com/other/yyafl',
+    url = 'http://www.stackfoundry.com/yyafl/',
     classifiers = [
         'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
@@ -14,7 +14,7 @@ setup(
           'Operating System :: Microsoft :: Windows',
           'Operating System :: POSIX',
           'Programming Language :: Python',
-          'Topic :: WWW/HTTP :: Dynamic Content',
+          'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'Topic :: Software Development :: User Interfaces',
         ],
     author_email = 'atrus@stackworks.net',
