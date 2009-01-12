@@ -60,6 +60,7 @@ class FieldsMetaclass(type):
 
 
 class BaseForm(object):
+    """ Do not directly derive from baseform. """
     def __init__(self, data = None, id = None):
         if data == {} or data is None:
             self.is_bound = False
@@ -79,8 +80,17 @@ class BaseForm(object):
             # Run validation now
             self.validate()
 
-    def render(self):
-        return self._layout.render(self)
+    def add_field(self, name, field):
+        """ Dynamically add a field instance with a given name. You will need to re-run validation. """
+        self.validated = False
+        self.fields[name] = field
+
+    def render(self, layout = None):
+        """ Return the drawn form with either the layout specified in _layout or by the given layout instance. """
+        if layout is None:
+            return self._layout.render(self)
+        else:
+            return layout.render(self)
 
     def bind(self, data, validate = True):
         """ Bind a form with data, optionally running validation.
