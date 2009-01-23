@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
     name = "yyafl",
-    version = "0.2.0",
+    version = "0.2.1",
     packages = ['yyafl'],
     author = 'Yann Ramin',
     url = 'http://www.stackfoundry.com/yyafl/',
@@ -19,7 +19,7 @@ setup(
           'Topic :: Software Development :: User Interfaces',
         ],
     author_email = 'atrus@stackworks.net',
-    description = "An easy to use web form generation, validtion and metadata utility library.",
+    description = "An easy to use web form generation/domain object, validtion and metadata utility library.",
     long_description = """
 Yann's Yet Another Form Library is a web form validtion and metadata library. Forms are created as a special class of domain object, which can then be validated and data extracted, and upon encountering errors, allow the form to be regenerated in HTML for the user's viewing.
 

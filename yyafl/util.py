@@ -96,9 +96,7 @@ def escape(string):
     string.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
     return string
 
-
 flatatt = lambda attrs: u''.join([u' %s="%s"' % (k, escape(v)) for k, v in attrs.items()])
-
 
 def smart_unicode(s):
     # Create a unicode string if its not a unicode string, using utf-8 encoding

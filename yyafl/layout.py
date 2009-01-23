@@ -37,14 +37,23 @@ class Layout(object):
         if self.decorators is None:
             self.decorators = {}
 
+    def add_decorator(self, fieldname, decorator):
+        """ Attach a decorator class to the field name specified. The special case of '*' will
+        attach the decorator to all field names. """
+        if fieldname in self.decorators:
+            self.decorators[fieldname].append(decorator)
+        else:
+            self.decorators[fieldname] = [decorator]
+
     def decorator_for_field(self, fieldname):
+        """ Return the decorator for the specified field name. """
         if fieldname in self.decorators:
             return self.decorators[fieldname]
 
         if '*' in self.decorators:
-            return self.decorators[fieldname]
+            return self.decorators['*']
 
-        return NullDecorator()
+        return [NullDecorator()]
 
     def render(self):
         raise Exception("Not implemented in BaseLayout")
@@ -63,11 +72,11 @@ class Decorator(object):
         raise Exception("Not implemented")
 
     def layout_widget_attributes(self, bound_field):
-        """ Returns a list of attributes to add to the layout clase for the label for this form field. """
+        """ Returns a list of attributes to add to the layout clause for the label for this form field. """
         raise Exception("Not implemented")
 
     def layout_label_attributes(self, bound_field):
-        """ Returns a list of attributes to add to the layout clase for the label for this form field. """
+        """ Returns a list of attributes to add to the layout clause for the label for this form field. """
         raise Exception("Not implemented")
 
     def extra_markup_widget(self, field, rendered_text):
@@ -132,21 +141,38 @@ class SimpleLayout(Layout):
     def render_row(self, form, field):
         data = []
         fieldname = field.name
-        dec = self.decorator_for_field(fieldname)
+        decs = self.decorator_for_field(fieldname)
 
-        data.append(self.row_begin_tag % flatatt(dec.layout_attributes(field)))
-        data.append(self.cell_begin_tag %flatatt(dec.layout_label_attributes(field)))
+        attrs = {}
+        for dec in decs:
+            attrs.update(dec.layout_attributes(field))
+        data.append(self.row_begin_tag % flatatt(attrs))
 
-        data.append(dec.extra_markup_label(field, field.field.label or fieldname))
+        attrs = {}
+        for dec in decs:
+            attrs.update(dec.layout_label_attributes(field))
+
+        data.append(self.cell_begin_tag % flatatt(attrs))
+
+        for dec in decs:
+            data.append(dec.extra_markup_label(field, field.field.label or fieldname))
 
         data.append(self.cell_end_tag)
-        data.append(self.cell_begin_tag % flatatt(dec.layout_widget_attributes(field)))
 
-        widget_attr = dec.widget_attributes(field)
+        attrs = {}
+        for dec in decs:
+            attrs.update(dec.layout_widget_attributes(field))
+        data.append(self.cell_begin_tag % flatatt(attrs))
+
+        widget_attr = {}
+        for dec in decs:
+            widget_attr.update(dec.widget_attributes(field))
 
         rendered_widget = field.as_widget(  **widget_attr )
 
-        data.append( dec.extra_markup_widget(field, rendered_widget) )
+        for dec in decs:
+            data.append( dec.extra_markup_widget(field, rendered_widget) )
+
         data.append(self.cell_end_tag + self.row_end_tag)
 
         return data
