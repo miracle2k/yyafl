@@ -19,7 +19,7 @@ class FormTest(object):
             content += "Errors: "
             for error in f.errors:
                 content += error + " : " + f.errors[error] + "<br />"
-        elif f.is_bound and f.is_valid():
+        elif f.is_bound() and f.is_valid():
             content += "Thanks for the data!"
 
 

@@ -63,9 +63,9 @@ class BaseForm(object):
     """ Do not directly derive from baseform. """
     def __init__(self, data = None, id = None):
         if data == {} or data is None:
-            self.is_bound = False
+            self._is_bound = False
         else:
-            self.is_bound = True
+            self._is_bound = True
 
         self.data = data or {}
         self.clean_data = {}
@@ -85,6 +85,12 @@ class BaseForm(object):
         self.validated = False
         self.fields[name] = field
 
+    def layout(self, newlayout = None):
+        """ Return the current layout, or set the new layout """
+        if newlayout is not None:
+            self._layout = newlayout
+        return self._layout
+
     def render(self, layout = None):
         """ Return the drawn form with either the layout specified in _layout or by the given layout instance. """
         if layout is None:
@@ -100,9 +106,9 @@ class BaseForm(object):
         """
         self.data = data
         if data == {} or data is None:
-            self.is_bound = False
+            self._is_bound = False
         else:
-            self.is_bound = True
+            self._is_bound = True
 
 
         self.errors = {}
@@ -131,7 +137,12 @@ class BaseForm(object):
         else:
             return field
 
+    def is_bound(self):
+        """ Has data been aassociated to this form? """
+        return self._is_bound
+
     def is_valid(self):
+        """ Has the form passed validation? """
         if self.errors != {}:
             return False
         if self.data == {}:
@@ -172,6 +183,11 @@ class BoundField(object):
     def __unicode__(self):
         return self.as_widget()
 
+    @property
+    def required(self):
+        """ Shortcut property to determine if the field is required """
+        return self.field.required
+
     def as_widget(self, widget = None, **kwargs):
         if not widget:
             widget = self.field.widget
@@ -182,7 +198,7 @@ class BoundField(object):
 
         if self.field.id:
             attrs['id'] = self.field.id
-        if not self.form.is_bound:
+        if not self.form._is_bound:
             data = self.field.default
         else:
             data = self.rawvalue
